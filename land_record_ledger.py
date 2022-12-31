@@ -48,3 +48,29 @@ class Blockchain:
         # Block is a dic , dump() convert dic to String, as encode works on str only
         encoded_block = json.dumps(block).encode()
         return hashlib.sha256(encoded_block).hexdigest()
+
+    def is_chain_valid(self, chain):
+        previous_block = chain[0]
+        block_idx = 1
+        while block_idx < len(chain):
+            block  = chain[block_idx]
+            # It means chain has been modified, Hash has been changed
+            if block['previous_hash'] != self.hash(previous_block):
+                return False
+            
+            # Condition 2 : Suppose block hash been changed and some how new hash value is also 
+            # same as previous hash, so we will add 1 more difficulty , by verifying proof
+            previous_proof = previous_block['proof']
+            proof = block['proof']
+            hash_val = hashlib.sha256(str(proof**2 - previous_proof**2).encode()).hexdigest()
+            if hash_val[:4] != '0000':
+                return False
+            
+            previous_block = block
+            block_idx += 1
+        
+        return True
+    
+    def get_last_block(self):
+        # get_previous_block
+        return self.chain[-1]
